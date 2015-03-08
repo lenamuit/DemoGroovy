@@ -11,8 +11,12 @@ import android.widget.TextView
 import android.widget.Toast
 import com.arasthel.swissknife.SwissKnife
 import com.arasthel.swissknife.annotations.InjectView
-import rx.android.observables.AndroidObservable
+import com.namlh.demogroovy.dto.PostDto
+import groovy.transform.CompileStatic
+import rx.android.schedulers.AndroidSchedulers
+import rx.schedulers.Schedulers
 
+@CompileStatic
 class MainActivity extends BaseActivity {
 
     @InjectView(R.id.refresh_layout)
@@ -20,8 +24,8 @@ class MainActivity extends BaseActivity {
     @InjectView(R.id.recycle_view)
     RecyclerView recyclerView;
 
-    def postsAdapter = new PostsAdapter()
-    def loadFinish = { refreshLayout.refreshing = false }
+    private PostsAdapter postsAdapter = new PostsAdapter()
+    def loadFinish = {refreshLayout.refreshing = false }
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState)
@@ -34,11 +38,16 @@ class MainActivity extends BaseActivity {
     }
 
     def loadData(){
-        AndroidObservable.bindActivity(this,tinhteService.getList())
+        tinhteService.getList()
             .flatMap({rx.Observable.from(it.getPosts())})
-            .subscribe({
-                postsAdapter.addPost(it)
-            },loadFinish,loadFinish)
+            .subscribeOn(Schedulers.newThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({PostDto p ->
+                    postsAdapter.addPost(p)
+                },
+                {refreshLayout.refreshing = false },
+                {refreshLayout.refreshing = false }
+            )
     }
 
     /**
@@ -46,14 +55,14 @@ class MainActivity extends BaseActivity {
      */
     private static class PostsAdapter extends RecyclerView.Adapter<PostViewHolder>{
 
-        def data = new ArrayList()
+        List<PostDto> data = new ArrayList()
 
         /**
          * add item to adapter
          * @param post
          * @return
          */
-        def addPost(post){
+        void addPost(PostDto post){
             data.add post
             notifyDataSetChanged()
         }
@@ -66,7 +75,7 @@ class MainActivity extends BaseActivity {
         @Override
         void onBindViewHolder(PostViewHolder viewHolder, int i) {
             def post = data.get(i)
-            viewHolder.tvTitle.hienthivanban(post.title)
+            viewHolder.tvTitle.setText(post.title)
             viewHolder.tvTitle.onClick {Toast.makeText(viewHolder.tvTitle.context,"click $post.title",Toast.LENGTH_LONG).show()}
 //            Picasso.with(viewHolder.imgThumbnail.context)
 //                .load(post.link_images[0])
