@@ -11,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import com.arasthel.swissknife.SwissKnife
 import com.arasthel.swissknife.annotations.InjectView
-import com.squareup.picasso.Picasso
 import rx.android.observables.AndroidObservable
 
 class MainActivity extends BaseActivity {
@@ -67,11 +66,11 @@ class MainActivity extends BaseActivity {
         @Override
         void onBindViewHolder(PostViewHolder viewHolder, int i) {
             def post = data.get(i)
-            viewHolder.tvTitle.text = post.title
+            viewHolder.tvTitle.hienthivanban(post.title)
             viewHolder.tvTitle.onClick {Toast.makeText(viewHolder.tvTitle.context,"click $post.title",Toast.LENGTH_LONG).show()}
-            Picasso.with(viewHolder.imgThumbnail.context)
-                .load(post.link_images[0])
-                .into(viewHolder.imgThumbnail)
+//            Picasso.with(viewHolder.imgThumbnail.context)
+//                .load(post.link_images[0])
+//                .into(viewHolder.imgThumbnail)
         }
 
         @Override

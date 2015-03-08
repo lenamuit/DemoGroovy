@@ -2,10 +2,11 @@ package com.namlh.demogroovy
 
 import android.os.Bundle
 import android.support.v7.app.ActionBarActivity
+import android.util.Log
+import android.widget.TextView
 import com.squareup.okhttp.OkHttpClient
 import retrofit.RestAdapter
-import retrofit.client.Client
-import retrofit.client.OkClient;
+import retrofit.client.OkClient
 
 class BaseActivity extends ActionBarActivity{
 
@@ -20,5 +21,20 @@ class BaseActivity extends ActionBarActivity{
                                 .build()
 
         tinhteService = restAdapter.create(TinhteService.class)
+
+        TextView.metaClass.invokeMethod = { String name, args ->
+            Log.e("NamLH","Invoke method $name")
+            if (name == "hienthivanban"){
+                name = "setText"
+            }
+            def validMethod = TextView.metaClass.getMetaMethod(name,args)
+            if (validMethod){
+                validMethod.invoke(delegate,args)
+            }
+        }
+
+        TextView.metaClass.hienthivanban = { args ->
+            delegate.text = args
+        }
     }
 }
